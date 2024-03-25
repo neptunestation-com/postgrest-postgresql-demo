@@ -68,7 +68,7 @@ create type jwt_token as (
 );
 
 create or replace function url_encode (data bytea) returns text language sql as $$
-  select translate(encode(data, 'base64'), e'+/=\n', '-_');
+  select translate(encode(data, 'base64'), E'+/=\n', '-_');
 $$ immutable;
 
 create or replace function url_decode (data text) returns bytea language sql as $$
@@ -87,14 +87,14 @@ create or replace function algorithm_sign (signables text, secret text, algorith
   with
   alg as (
     select case
-	   when algorithm = 'hs256' then 'sha256'
-	   when algorithm = 'hs384' then 'sha384'
-	   when algorithm = 'hs512' then 'sha512'
+	   when algorithm = 'HS256' then 'sha256'
+	   when algorithm = 'HS384' then 'sha384'
+	   when algorithm = 'HS512' then 'sha512'
 	   else '' end as id)
   select url_encode(hmac(signables, secret, alg.id)) from alg;
 $$ immutable;
 
-create or replace function sign (payload json, secret text, algorithm text default 'hs256')
+create or replace function sign (payload json, secret text, algorithm text default 'HS256')
   returns text language sql as $$
   with
   header as (
@@ -111,7 +111,7 @@ create or replace function sign (payload json, secret text, algorithm text defau
   algorithm_sign(signables.data, secret, algorithm) from signables;
 $$ immutable;
 
-create or replace function verify (token text, secret text, algorithm text default 'hs256')
+create or replace function verify (token text, secret text, algorithm text default 'HS256')
   returns table(header json, payload json, valid boolean) language sql as $$
   select
   convert_from(url_decode(r[1]), 'utf8')::json as header,
@@ -122,7 +122,7 @@ $$ immutable;
 
 create function jwt_test () returns public.jwt_token as $$
   select public.sign(
-    row_to_json(r), 'reallyreallyreallyreallyverysafe'
+    row_to_json(r), current_setting('app.jwt_secret')
   ) as token
   from (
     select
@@ -130,8 +130,6 @@ create function jwt_test () returns public.jwt_token as $$
       extract(epoch from now())::integer + 300 as exp
   ) r;
 $$ language sql;
-
-alter database postgres set "app.jwt_secret" to 'reallyreallyreallyreallyverysafe';
 
 create type basic_auth.jwt_token as (
   token text
