@@ -1,8 +1,6 @@
 -- -*- sql-product: postgres; -*-
 
--- create role anon with nosuperuser inherit nocreaterole nocreatedb nologin noreplication nobypassrls;
-
--- create role authenticator with nosuperuser noinherit nocreaterole nocreatedb nologin noreplication nobypassrls;
+create role account noinherit nologin;
 
 create extension if not exists xml2 with schema public;
 
@@ -22,6 +20,24 @@ create or replace view resource as
      and obj_description(oid, 'pg_largeobject'::name)::jsonb->>'content-type' not in ('image/jpeg');
 
 create domain "text/html" as text;
+
+create domain "text/css" as text;
+
+create or replace function login ()
+  returns "text/html"
+  language sql
+  stable parallel safe
+as $function$
+  select
+  xslt_process(
+    xmlroot(
+      xmlelement(
+	name login),
+	version '1.0',
+	standalone yes)::text,
+	content::text)
+  from resource where slug = 'demo.xsl';
+  $function$;
 
 create or replace function index ()
   returns "text/html"
@@ -80,6 +96,8 @@ notify pgrst, 'reload schema';
 
 \lo_import /docker-entrypoint-initdb.d/demo.xsl '{"name": "demo.xsl", "content-type": "application/xslt+xml"}'
 
+\lo_import /docker-entrypoint-initdb.d/font-awesome.css '{"name": "font-awesome.css", "content-type": "text/css"}'
+
 do $$
 declare
   grant_statement text;
@@ -91,4 +109,17 @@ begin
 end;
 $$;
 
+do $$
+declare
+  grant_statement text;
+begin
+  for grant_statement in select format('grant select on large object %s to account', oid) from pg_largeobject_metadata loop
+    raise notice 'performing grant: %', grant_statement;
+    execute grant_statement;
+  end loop;
+end;
+$$;
+
 insert into public.param (name, val) values ('xml-stylesheet', '/resource/demo.xsl');
+
+insert into public.param (name, val) values ('css-stylesheet', '/resource/font-awesome.xsl');

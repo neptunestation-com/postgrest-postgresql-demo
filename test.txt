@@ -23,4 +23,20 @@ POST http://:PGHOST::PGRST_SERVER_PORT/rpc/login
 #
 GET http://:PGHOST::PGRST_SERVER_PORT/rpc/index
 Accept:  text/html
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6Imp3dCJ9.eyJyb2xlIjoiYWNjb3VudCIsImVtYWlsIjoiZGF2aWRhdmVudGltaWdsaWFAbmVwdHVuZXN0YXRpb24uY29tIiwiZXhwIjoxNzExMzMyMjY1fQ.g8IhmTEF1vIlHdOnmh2P-DMd2pn5U3dA_lxmurLUhn8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6Imp3dCJ9.eyJyb2xlIjoiYWNjb3VudCIsImVtYWlsIjoiZGF2aWRhdmVudGltaWdsaWFAbmVwdHVuZXN0YXRpb24uY29tIiwiZXhwIjoxNzExMzc4MDA5fQ.v2HsZAPQFcqt8oC44duARSiR2O7Xzb3jLlUJukkl-xg
+
+#
+GET http://:PGHOST::PGRST_SERVER_PORT/rpc/index
+Accept:  text/html
+
+#
+GET http://:PGHOST::PGRST_SERVER_PORT/rpc/index
+Accept:  text/html
+
+#
+GET http://:PGHOST::PGRST_SERVER_PORT/rpc/login
+Accept:  text/html
+
+#
+GET http://:PGHOST::PGRST_SERVER_PORT/resource?slug=eq.font-awesome.css
+
